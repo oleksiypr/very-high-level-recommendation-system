@@ -1,8 +1,11 @@
 package op.assessment.xt
 
+import akka.actor.ActorRef
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{MessageEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.testkit.{TestActor, TestProbe}
+import op.assessment.xt.UseVideoRepo.RegisterUser
 import op.assessment.xt.UserVideoRoutes.{Errors, Register, User}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures
@@ -10,6 +13,19 @@ import org.scalatest.concurrent.ScalaFutures
 class UserVideoRoutesSpec extends WordSpec
   with Matchers with ScalaFutures with ScalatestRouteTest
   with UserVideoRoutes {
+
+  val probe = TestProbe()
+  val useVideoRepo: ActorRef = probe.ref
+
+  probe.setAutoPilot(
+    (sender: ActorRef, msg: Any) => {
+      msg match {
+        case RegisterUser(_) =>
+          sender ! Register(userId = 9797345L, videoId = 4324556L)
+      }
+      TestActor.KeepRunning
+    }
+  )
 
   "UserVideoRoutes POST /register" should {
     "return 200 Ok" in {

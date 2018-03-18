@@ -1,14 +1,21 @@
 package op.assessment.xt
 
-import akka.http.scaladsl.server.Route
+import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
-import op.assessment.sn.JsonSupport
-import op.assessment.xt.UserVideoRoutes.{Errors, Register, User, UserValidation}
-import cats.data._
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.directives.RouteDirectives.complete
+import akka.pattern.ask
+import akka.util.Timeout
 import cats.data.Validated._
+import cats.data._
 import cats.implicits._
+import op.assessment.sn.JsonSupport
+import op.assessment.xt.UseVideoRepo.RegisterUser
 import op.assessment.xt.UserVideoRoutes.UserValidation.ValidationResult
+import op.assessment.xt.UserVideoRoutes.{Errors, Register, User, UserValidation}
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 object UserVideoRoutes {
 
@@ -39,14 +46,14 @@ object UserVideoRoutes {
     type ValidationResult[A] = ValidatedNel[UserValidation, A]
 
     def validate(user: User): ValidationResult[User] = (
-        validatenName(user.name),
+        validateName(user.name),
         validateEmail(user.email),
         valiadteAge(user.age),
         validateGender(user.gender)
       ).mapN(User)
 
-    private def validatenName(name: String
-      ): ValidationResult[String] = name.validNel
+    private def validateName(
+        name: String): ValidationResult[String] = name.validNel
 
     private def validateEmail(
         email: String
@@ -69,15 +76,23 @@ object UserVideoRoutes {
 
 trait UserVideoRoutes extends JsonSupport {
 
+  val useVideoRepo: ActorRef
+
+  implicit val timeout: Timeout = 5.seconds
+
   lazy val routes: Route = path("register") {
     post {
       entity(as[User]) { u =>
         val validated: ValidationResult[User] = UserValidation.validate(u)
         validated match {
           case Valid(user) =>
-            complete((
-              StatusCodes.OK,
-              Register(userId = 9797345L, videoId = 4324556L)))
+            onComplete((useVideoRepo ? RegisterUser(user)).mapTo[Register]) {
+              case Success(res) => complete((StatusCodes.OK, res))
+              case Failure(err) => complete((
+                StatusCodes.InternalServerError,
+                Errors(List(err.getMessage))
+              ))
+            }
           case Invalid(errors) =>
             complete((
               StatusCodes.BadRequest,
