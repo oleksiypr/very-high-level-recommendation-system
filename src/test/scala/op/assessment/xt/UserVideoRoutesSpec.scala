@@ -5,8 +5,8 @@ import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{MessageEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.{TestActor, TestProbe}
-import op.assessment.xt.UseVideoRepo.{RegisterUser, UserNotExist, UserRecommendation}
-import op.assessment.xt.UserVideoRoutes.{Errors, Register, User, UserAction}
+import op.assessment.xt.UseVideoRepo._
+import op.assessment.xt.UserVideoRoutes.{Errors, Register, User}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures
 
@@ -25,7 +25,9 @@ class UserVideoRoutesSpec extends WordSpec
         case UserAction(9797345L, 4324556L, _) =>
           sender ! UserRecommendation(userId = 9797345L, videoId = 6454556L)
         case UserAction(-1L, 4324556L, _) =>
-          sender ! UserNotExist(userId = -1)
+          sender ! UserNotExist(userId = -1L)
+        case UserAction(9797345L, -1L, _) =>
+          sender ! VideoNotCorrespond(videoId = -1L, lastVideoId = 6454556L)
       }
       TestActor.KeepRunning
     }
@@ -147,6 +149,24 @@ class UserVideoRoutesSpec extends WordSpec
         status should ===(StatusCodes.BadRequest)
         entityAs[Errors] should ===(
           Errors(List("userId -1 not exist"))
+        )
+      }
+    }
+    "return 400: video does not correspond to last given" in {
+      val  request = Post(
+        "/action"
+      ).withEntity(
+        Marshal(UserAction(
+          userId = 9797345L,
+          videoId = -1L,
+          action = 3
+        )).to[MessageEntity].futureValue
+      )
+
+      request ~> routes ~> check {
+        status should ===(StatusCodes.BadRequest)
+        entityAs[Errors] should ===(
+          Errors(List("video does not correspond to last given"))
         )
       }
     }

@@ -11,7 +11,7 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import op.assessment.sn.JsonSupport
-import op.assessment.xt.UseVideoRepo.{ActionResult, RegisterUser, UserNotExist, UserRecommendation}
+import op.assessment.xt.UseVideoRepo._
 import op.assessment.xt.UserVideoRoutes._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
@@ -26,12 +26,6 @@ object UserVideoRoutes {
     )
 
   final case class Register(userId: Long, videoId: Long)
-
-  final case class UserAction(
-      userId: Long,
-      videoId: Long,
-      action: Int
-    )
 
   final case class Errors(errs: List[String])
 
@@ -109,7 +103,12 @@ trait UserVideoRoutes extends JsonSupport {
                 StatusCodes.BadRequest,
                 Errors(List(s"userId $u not exist"))
               ))
-            }
+            case VideoNotCorrespond(_, _) =>
+              complete((
+                StatusCodes.BadRequest,
+                Errors(List(s"video does not correspond to last given"))
+              ))
+          }
        case Failure(err) => complete((
             StatusCodes.InternalServerError,
             Errors(List(err.getMessage))

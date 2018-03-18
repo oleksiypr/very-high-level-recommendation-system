@@ -68,7 +68,6 @@ For both requests there should be following error response format:
     "age is not valid", 
     "gender is not valid", 
     "video does not correspond to last given", 
-    "video does not correspond to last given", 
     "userId does not exist" 
   ] 
 }
