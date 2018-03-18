@@ -11,7 +11,7 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import op.assessment.sn.JsonSupport
-import op.assessment.xt.UseVideoRepo._
+import op.assessment.xt.UserVideoRepo._
 import op.assessment.xt.UserVideoRoutes._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
