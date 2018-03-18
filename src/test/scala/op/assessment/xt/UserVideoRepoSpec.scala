@@ -3,7 +3,7 @@ package op.assessment.xt
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActor, TestKit, TestProbe}
 import op.assessment.xt.UserActivityTracker.{Track, Tracked, UnableToTrackVideo}
-import op.assessment.xt.UserVideoRepo._
+import op.assessment.xt.UserVideoActor._
 import op.assessment.xt.UserVideoRoutes.User
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 

@@ -5,12 +5,12 @@ import akka.event.Logging
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import op.assessment.xt.UserActivityTracker.{Track, TrackResult, Tracked, UnableToTrackVideo}
-import op.assessment.xt.UserVideoRepo._
+import op.assessment.xt.UserVideoActor._
 import op.assessment.xt.UserVideoRoutes.User
 import scala.concurrent.duration._
 import scala.util.Random
 
-object UserVideoRepo {
+object UserVideoActor {
 
   def props: Props = Props[UserVideoRepo]
 
@@ -43,7 +43,7 @@ trait UserVideoActor extends Actor {
 
   def trackerProps(userId: Long, videoId: Long): Props
 
-  def receive: Receive = {
+  val receive: Receive = {
     case RegisterUser(user) =>
       log.info("New uesr: {}", user)
       val userId = nextUserId()

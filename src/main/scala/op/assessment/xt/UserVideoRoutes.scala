@@ -11,9 +11,10 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import op.assessment.sn.JsonSupport
-import op.assessment.xt.UserVideoRepo._
+import op.assessment.xt.UserVideoActor._
 import op.assessment.xt.UserVideoRoutes._
 import scala.concurrent.duration._
+import scala.util.matching.Regex
 import scala.util.{Failure, Success}
 
 object UserVideoRoutes {
@@ -38,6 +39,8 @@ object UserVideoRoutes {
 
     type ValidationResult[A] = ValidatedNel[UserValidation, A]
 
+    val EmailRegexp: Regex = """(\w+)@([\w\.]+)""".r
+
     def validate(user: User): ValidationResult[User] = (
         validateName(user.name),
         validateEmail(user.email),
@@ -51,7 +54,7 @@ object UserVideoRoutes {
     private def validateEmail(
         email: String
       ): ValidationResult[String] = {
-      if ("""(\w+)@([\w\.]+)""".r.unapplySeq(email).isDefined) email.validNel
+      if (EmailRegexp.unapplySeq(email).isDefined) email.validNel
       else EmailNotValid.invalidNel
     }
 
