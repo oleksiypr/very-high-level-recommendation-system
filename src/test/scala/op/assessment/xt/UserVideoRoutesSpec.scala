@@ -5,7 +5,7 @@ import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{MessageEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.{TestActor, TestProbe}
-import op.assessment.xt.UseVideoRepo.RegisterUser
+import op.assessment.xt.UseVideoRepo.{RegisterUser, UserNotExist, UserRecommendation}
 import op.assessment.xt.UserVideoRoutes.{Errors, Register, User, UserAction}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures
@@ -23,7 +23,9 @@ class UserVideoRoutesSpec extends WordSpec
         case RegisterUser(_) =>
           sender ! Register(userId = 9797345L, videoId = 4324556L)
         case UserAction(9797345L, 4324556L, _) =>
-          sender ! Register(userId = 9797345L, videoId = 6454556L)
+          sender ! UserRecommendation(userId = 9797345L, videoId = 6454556L)
+        case UserAction(-1L, 4324556L, _) =>
+          sender ! UserNotExist(userId = -1)
       }
       TestActor.KeepRunning
     }
@@ -127,6 +129,24 @@ class UserVideoRoutesSpec extends WordSpec
         status should ===(StatusCodes.OK)
         entityAs[Register] should ===(
           Register(userId = 9797345L, videoId =6454556L)
+        )
+      }
+    }
+    "return 400: userId does not exist" in {
+      val  request = Post(
+        "/action"
+      ).withEntity(
+        Marshal(UserAction(
+          userId = -1L,
+          videoId = 4324556L,
+          action = 3
+        )).to[MessageEntity].futureValue
+      )
+
+      request ~> routes ~> check {
+        status should ===(StatusCodes.BadRequest)
+        entityAs[Errors] should ===(
+          Errors(List("userId -1 not exist"))
         )
       }
     }

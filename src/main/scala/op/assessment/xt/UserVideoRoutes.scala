@@ -11,7 +11,7 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import op.assessment.sn.JsonSupport
-import op.assessment.xt.UseVideoRepo.RegisterUser
+import op.assessment.xt.UseVideoRepo.{ActionResult, RegisterUser, UserNotExist, UserRecommendation}
 import op.assessment.xt.UserVideoRoutes._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
@@ -101,10 +101,16 @@ trait UserVideoRoutes extends JsonSupport {
   } ~ path("action") {
     post {
       entity(as[UserAction]) { ua =>
-        onComplete((useVideoRepo ? ua).mapTo[Register]) {
-          case Success(res) =>
-            complete((StatusCodes.OK, res))
-          case Failure(err) => complete((
+        onComplete((useVideoRepo ? ua).mapTo[ActionResult]) {
+          case Success(res) => res match {
+            case UserRecommendation(u, v) =>
+              complete((StatusCodes.OK, Register(u, v)))
+            case UserNotExist(u) => complete((
+                StatusCodes.BadRequest,
+                Errors(List(s"userId $u not exist"))
+              ))
+            }
+       case Failure(err) => complete((
             StatusCodes.InternalServerError,
             Errors(List(err.getMessage))
           ))
