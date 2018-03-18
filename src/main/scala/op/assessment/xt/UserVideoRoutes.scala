@@ -12,8 +12,7 @@ import cats.data._
 import cats.implicits._
 import op.assessment.sn.JsonSupport
 import op.assessment.xt.UseVideoRepo.RegisterUser
-import op.assessment.xt.UserVideoRoutes.UserValidation.ValidationResult
-import op.assessment.xt.UserVideoRoutes.{Errors, Register, User, UserValidation}
+import op.assessment.xt.UserVideoRoutes._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -83,8 +82,7 @@ trait UserVideoRoutes extends JsonSupport {
   lazy val routes: Route = path("register") {
     post {
       entity(as[User]) { u =>
-        val validated: ValidationResult[User] = UserValidation.validate(u)
-        validated match {
+        UserValidation.validate(u) match {
           case Valid(user) =>
             onComplete((useVideoRepo ? RegisterUser(user)).mapTo[Register]) {
               case Success(res) => complete((StatusCodes.OK, res))
@@ -97,6 +95,19 @@ trait UserVideoRoutes extends JsonSupport {
             complete((
               StatusCodes.BadRequest,
               Errors(errors.toList.map(_.message))))
+        }
+      }
+    }
+  } ~ path("action") {
+    post {
+      entity(as[UserAction]) { ua =>
+        onComplete((useVideoRepo ? ua).mapTo[Register]) {
+          case Success(res) =>
+            complete((StatusCodes.OK, res))
+          case Failure(err) => complete((
+            StatusCodes.InternalServerError,
+            Errors(List(err.getMessage))
+          ))
         }
       }
     }

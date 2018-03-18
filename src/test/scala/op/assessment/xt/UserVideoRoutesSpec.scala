@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{MessageEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.{TestActor, TestProbe}
 import op.assessment.xt.UseVideoRepo.RegisterUser
-import op.assessment.xt.UserVideoRoutes.{Errors, Register, User}
+import op.assessment.xt.UserVideoRoutes.{Errors, Register, User, UserAction}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures
 
@@ -22,12 +22,14 @@ class UserVideoRoutesSpec extends WordSpec
       msg match {
         case RegisterUser(_) =>
           sender ! Register(userId = 9797345L, videoId = 4324556L)
+        case UserAction(9797345L, 4324556L, _) =>
+          sender ! Register(userId = 9797345L, videoId = 6454556L)
       }
       TestActor.KeepRunning
     }
   )
 
-  "UserVideoRoutes POST /register" should {
+  "UserVideoRoutes POST: /register" should {
     "return 200 Ok" in {
       val  request = Post(
           "/register"
@@ -104,6 +106,27 @@ class UserVideoRoutesSpec extends WordSpec
             "email is not valid",
             "age is not valid",
             "gender is not valid"))
+        )
+      }
+    }
+  }
+
+  "UserVideoRoutes POST: /action" should {
+    "return 200 Ok" in {
+      val  request = Post(
+        "/action"
+      ).withEntity(
+        Marshal(UserAction(
+          userId = 9797345L,
+          videoId = 4324556L,
+          action = 3
+        )).to[MessageEntity].futureValue
+      )
+
+      request ~> routes ~> check {
+        status should ===(StatusCodes.OK)
+        entityAs[Register] should ===(
+          Register(userId = 9797345L, videoId =6454556L)
         )
       }
     }
