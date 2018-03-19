@@ -49,20 +49,23 @@ trait UserVideoActor extends Actor {
       log.info("New user: {}", user)
       val userId = nextUserId()
       val videoId = leastVideo()
-      val tracker = context.actorOf(trackerProps(userId, videoId))
-      users += userId -> tracker
+      users += userId -> tracker(userId, videoId)
       sender ! UserRecommendation(userId, videoId)
 
     case UserAction(u, v, a) if users.contains(u) =>
       val tracker = users(u)
       val least = leastVideo()
       (tracker ? Track(v, least, a)).mapTo[TrackResult] map {
-        case Tracked(userId, videoId) => UserRecommendation(userId, least)
+        case Tracked(userId, _) => UserRecommendation(userId, least)
         case UnableToTrackVideo(actualId, attemptedId) =>
           VideoNotCorrespond(actualId, attemptedId)
       } pipeTo sender
 
     case UserAction(u, _, _) => sender ! UserNotExist(u)
+  }
+
+  private def tracker(userId: UserId, videoId: VideoId) = {
+    context.actorOf(trackerProps(userId, videoId))
   }
 
   private def leastVideo() = {
