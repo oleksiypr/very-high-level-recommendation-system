@@ -120,7 +120,6 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
               sender ! Tracked(joeId, joeVideoId)
             case Track(`aliceVideoId`, _, _) =>
               sender ! Tracked(aliceId, aliceVideoId)
-            case msg => println(msg)
           }
           TestActor.KeepRunning
         }

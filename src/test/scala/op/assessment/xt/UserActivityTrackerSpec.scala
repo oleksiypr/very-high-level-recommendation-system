@@ -13,6 +13,13 @@ class UserActivityTrackerSpec(_system: ActorSystem) extends TestKit(_system)
     TestKit.shutdownActorSystem(system)
   }
 
+  "UserActivityTracker" should {
+    "track user videos" in {
+      val userId = 9797345L
+      val videoId = 6454556l
+      val tracker = system.actorOf(UserActivityTracker.props(userId, videoId))
 
 
+    }
+  }
 }
