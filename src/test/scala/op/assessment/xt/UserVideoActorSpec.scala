@@ -7,15 +7,15 @@ import op.assessment.xt.UserVideoActor._
 import op.assessment.xt.UserVideoRoutes.User
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
-object UserVideoRepoSpec {
+object UserVideoActorSpec {
 
-  class FakeTracker private[UserVideoRepoSpec](probe: ActorRef) extends Actor {
+  class FakeTracker private[UserVideoActorSpec](probe: ActorRef) extends Actor {
     val receive: Receive = {
       case msg => probe.forward(msg)
     }
   }
 
-  class TestUserVideoActor private[UserVideoRepoSpec](probe: ActorRef)
+  class TestUserVideoActor private[UserVideoActorSpec](probe: ActorRef)
     extends UserVideoActor {
 
     def trackerProps(
@@ -30,10 +30,10 @@ object UserVideoRepoSpec {
   }
 }
 
-class UserVideoRepoSpec(_system: ActorSystem) extends TestKit(_system)
+class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
   with ImplicitSender with WordSpecLike with Matchers with BeforeAndAfterAll {
 
-  import UserVideoRepoSpec._
+  import UserVideoActorSpec._
 
   def this() = this(ActorSystem("UserVideoRepoSpec"))
 
@@ -84,4 +84,5 @@ class UserVideoRepoSpec(_system: ActorSystem) extends TestKit(_system)
       }
     }
   }
+
 }
