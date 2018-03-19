@@ -79,7 +79,7 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
 
       userVideoRepo ! UserAction(userId, videoToExpect, action = 1)
       expectMsgPF() {
-        case UserRecommendation(u, v) =>
+        case UserRecommendation(u, v) => succeed
         case other => fail(s"Unexpected message: $other")
       }
     }
@@ -112,6 +112,35 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
       }
 
       joeId shouldNot equal(aliceId)
+
+      probe.setAutoPilot(
+        (sender: ActorRef, msg: Any) => {
+          msg match {
+            case Track(`joeVideoId`, _, _) =>
+              sender ! Tracked(joeId, joeVideoId)
+            case Track(`aliceVideoId`, _, _) =>
+              sender ! Tracked(aliceId, aliceVideoId)
+            case msg => println(msg)
+          }
+          TestActor.KeepRunning
+        }
+      )
+
+      userVideoRepo ! UserAction(joeId, joeVideoId, action = 2)
+      expectMsgPF() {
+        case UserRecommendation(u, v) => succeed
+        case other => fail(s"Unexpected message: $other")
+      }
+
+      userVideoRepo ! UserAction(aliceId, aliceVideoId, action = 3)
+      expectMsgPF() {
+        case UserRecommendation(u, v) => succeed
+        case other => fail(s"Unexpected message: $other")
+      }
+
+      val someUnknownUserId = 2 * (joeId + aliceId)
+      userVideoRepo ! UserAction(someUnknownUserId, aliceId, action = 3)
+      expectMsg(UserNotExist(someUnknownUserId))
     }
   }
 }
