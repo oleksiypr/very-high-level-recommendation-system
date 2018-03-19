@@ -35,7 +35,7 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
 
   import UserVideoActorSpec._
 
-  def this() = this(ActorSystem("UserVideoRepoSpec"))
+  def this() = this(ActorSystem("UserVideoActorSpec"))
 
   override def afterAll {
     TestKit.shutdownActorSystem(system)
