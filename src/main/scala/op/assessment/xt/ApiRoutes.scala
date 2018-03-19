@@ -67,6 +67,18 @@ object ApiRoutes {
       else GenderNotValid.invalidNel
     }
   }
+
+  object ActionValidation {
+
+    type ValidationResult = ValidatedNel[String, UserAction]
+
+    val message: String = "action ids are limited to: 1, 2 or 3"
+
+    def validate(ua: UserAction): ValidationResult = {
+      if (ua.actionId < 1 || ua.actionId > 3) message.invalidNel
+      else ua.validNel
+    }
+  }
 }
 
 trait ApiRoutes extends JsonSupport {
@@ -98,27 +110,34 @@ trait ApiRoutes extends JsonSupport {
     }
   } ~ path("action") {
     post {
-      entity(as[UserAction]) { ua =>
-        onComplete((useVideoRepo ? ua).mapTo[ActionResult]) {
-          case Success(res) => res match {
-            case UserRecommendation(u, v) =>
-              complete((StatusCodes.OK, Register(u, v)))
-            case UserNotExist(u) => complete((
-                StatusCodes.BadRequest,
-                Errors(List(s"userId $u not exist"))
-              ))
-            case VideoNotCorrespond(actualId, attemptedId) =>
-              complete((
-                StatusCodes.BadRequest,
-                Errors(List(
-                  s"video $attemptedId does not correspond to last given $actualId"
+      entity(as[UserAction]) { userAction =>
+        ActionValidation.validate(userAction) match {
+          case Valid(ua) =>
+            onComplete((useVideoRepo ? ua).mapTo[ActionResult]) {
+              case Success(res) => res match {
+                case UserRecommendation(u, v) =>
+                  complete((StatusCodes.OK, Register(u, v)))
+                case UserNotExist(u) => complete((
+                  StatusCodes.BadRequest,
+                  Errors(List(s"userId $u not exist"))
                 ))
+                case VideoNotCorrespond(actualId, attemptedId) =>
+                  complete((
+                    StatusCodes.BadRequest,
+                    Errors(List(
+                      s"video $attemptedId does not correspond to last given $actualId"
+                    ))
+                  ))
+              }
+              case Failure(err) => complete((
+                StatusCodes.InternalServerError,
+                Errors(List(err.getMessage))
               ))
-          }
-       case Failure(err) => complete((
-            StatusCodes.InternalServerError,
-            Errors(List(err.getMessage))
-          ))
+            }
+          case Invalid(error) =>
+            complete((
+              StatusCodes.BadRequest,
+              Errors(error.toList)))
         }
       }
     }

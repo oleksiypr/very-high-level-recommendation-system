@@ -141,7 +141,7 @@ class ApiRoutesSpec extends WordSpec
         Marshal(UserAction(
           userId = -1L,
           videoId = 4324556L,
-          actionId = 3
+          actionId = 2
         )).to[MessageEntity].futureValue
       )
 
@@ -159,7 +159,7 @@ class ApiRoutesSpec extends WordSpec
         Marshal(UserAction(
           userId = 9797345L,
           videoId = -1L,
-          actionId = 3
+          actionId = 1
         )).to[MessageEntity].futureValue
       )
 
@@ -167,6 +167,24 @@ class ApiRoutesSpec extends WordSpec
         status should ===(StatusCodes.BadRequest)
         entityAs[Errors] should ===(
           Errors(List("video 6454556 does not correspond to last given -1"))
+        )
+      }
+    }
+    "return 400: action ids are limited to the list [1, 2, 3]" in {
+      val  request = Post(
+        "/action"
+      ).withEntity(
+        Marshal(UserAction(
+          userId = 9797345L,
+          videoId = 4324556L,
+          actionId = 6
+        )).to[MessageEntity].futureValue
+      )
+
+      request ~> routes ~> check {
+        status should ===(StatusCodes.BadRequest)
+        entityAs[Errors] should ===(
+          Errors(List("action ids are limited to: 1, 2 or 3"))
         )
       }
     }
