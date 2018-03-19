@@ -41,7 +41,7 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
     TestKit.shutdownActorSystem(system)
   }
 
-  "UserVideoRepo" should {
+  "UserVideoActor" should {
     "handle registrations and actions" in {
       val probe = TestProbe()
       val userVideoRepo = system.actorOf(props(probe.ref))
@@ -52,7 +52,7 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
       userVideoRepo ! RegisterUser(User(
         name = "David",
         email = "david@gmail.com",
-        age = 127,
+        age = 25,
         gender = 1
       ))
       val (userId, videoId) = expectMsgPF() {
@@ -85,4 +85,33 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
     }
   }
 
+  "UserVideoActor" should {
+    "handle multiple users" in {
+      val probe = TestProbe()
+      val userVideoRepo = system.actorOf(props(probe.ref))
+
+      userVideoRepo ! RegisterUser(User(
+        name = "Joe",
+        email = "joe@gmail.com",
+        age = 25,
+        gender = 1
+      ))
+      val (joeId, joeVideoId) = expectMsgPF() {
+        case UserRecommendation(u, v) => (u, v)
+      }
+
+      userVideoRepo ! RegisterUser(User(
+        name = "Alice",
+        email = "joe@gmail.com",
+        age = 25,
+        gender = 2
+      ))
+
+      val (aliceId, aliceVideoId) = expectMsgPF() {
+        case UserRecommendation(u, v) => (u, v)
+      }
+
+      joeId shouldNot equal(aliceId)
+    }
+  }
 }
