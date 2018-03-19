@@ -21,7 +21,7 @@ class ApiRoutesSpec extends WordSpec
     (sender: ActorRef, msg: Any) => {
       msg match {
         case RegisterUser(_) =>
-          sender ! Register(userId = 9797345L, videoId = 4324556L)
+          sender ! UserRecommendation(userId = 9797345L, videoId = 4324556L)
         case UserAction(9797345L, 4324556L, _) =>
           sender ! UserRecommendation(userId = 9797345L, videoId = 6454556L)
         case UserAction(-1L, 4324556L, _) =>
@@ -39,7 +39,7 @@ class ApiRoutesSpec extends WordSpec
           "/register"
         ).withEntity(
           Marshal(User(
-            name = "David",
+            userName = "David",
             email = "david@gmail.com",
             age = 28,
             gender = 1
@@ -58,7 +58,7 @@ class ApiRoutesSpec extends WordSpec
         "/register"
       ).withEntity(
         Marshal(User(
-          name = "David",
+          userName = "David",
           email = "david-gmail.com",
           age = 28,
           gender = 1
@@ -77,7 +77,7 @@ class ApiRoutesSpec extends WordSpec
         "/register"
       ).withEntity(
         Marshal(User(
-          name = "David",
+          userName = "David",
           email = "david@gmail.com",
           age = 127,
           gender = 1
@@ -96,7 +96,7 @@ class ApiRoutesSpec extends WordSpec
         "/register"
       ).withEntity(
         Marshal(User(
-          name = "David",
+          userName = "David",
           email = "david-gmail.com",
           age = 127,
           gender = 3
@@ -123,7 +123,7 @@ class ApiRoutesSpec extends WordSpec
         Marshal(UserAction(
           userId = 9797345L,
           videoId = 4324556L,
-          action = 3
+          actionId = 3
         )).to[MessageEntity].futureValue
       )
 
@@ -141,7 +141,7 @@ class ApiRoutesSpec extends WordSpec
         Marshal(UserAction(
           userId = -1L,
           videoId = 4324556L,
-          action = 3
+          actionId = 3
         )).to[MessageEntity].futureValue
       )
 
@@ -159,14 +159,14 @@ class ApiRoutesSpec extends WordSpec
         Marshal(UserAction(
           userId = 9797345L,
           videoId = -1L,
-          action = 3
+          actionId = 3
         )).to[MessageEntity].futureValue
       )
 
       request ~> routes ~> check {
         status should ===(StatusCodes.BadRequest)
         entityAs[Errors] should ===(
-          Errors(List("video does not correspond to last given"))
+          Errors(List("video 6454556 does not correspond to last given -1"))
         )
       }
     }

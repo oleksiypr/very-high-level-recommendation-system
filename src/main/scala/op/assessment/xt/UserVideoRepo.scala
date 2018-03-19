@@ -16,7 +16,7 @@ object UserVideoActor {
 
   sealed trait UserVideoCommand
   final case class RegisterUser(user: User) extends UserVideoCommand
-  final case class UserAction(userId: Long, videoId: Long, action: Int) extends UserVideoCommand
+  final case class UserAction(userId: Long, videoId: Long, actionId: Int) extends UserVideoCommand
 
   sealed trait ActionResult
   final case class UserRecommendation(userId: Long, videoId: Long) extends ActionResult
@@ -57,7 +57,7 @@ trait UserVideoActor extends Actor {
       val tracker = users(u)
       val least = leastVideo()
       (tracker ? Track(v, least, a)).mapTo[TrackResult] map {
-        case Tracked(userId, videoId) => UserRecommendation(userId, videoId)
+        case Tracked(userId, videoId) => UserRecommendation(userId, least)
         case UnableToTrackVideo(actualId, attemptedId) =>
           VideoNotCorrespond(actualId, attemptedId)
       } pipeTo sender

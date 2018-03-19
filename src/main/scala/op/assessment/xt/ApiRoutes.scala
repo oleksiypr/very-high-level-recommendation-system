@@ -19,7 +19,7 @@ import scala.util.{Failure, Success}
 object ApiRoutes {
 
   final case class User(
-      name: String,
+      userName: String,
       email: String,
       age: Int,
       gender: Int
@@ -41,7 +41,7 @@ object ApiRoutes {
     val EmailRegexp: Regex = """(\w+)@([\w\.]+)""".r
 
     def validate(user: User): ValidationResult[User] = (
-        validateName(user.name),
+        validateName(user.userName),
         validateEmail(user.email),
         valiadteAge(user.age),
         validateGender(user.gender)
@@ -80,8 +80,10 @@ trait ApiRoutes extends JsonSupport {
       entity(as[User]) { u =>
         UserValidation.validate(u) match {
           case Valid(user) =>
-            onComplete((useVideoRepo ? RegisterUser(user)).mapTo[Register]) {
-              case Success(res) => complete((StatusCodes.OK, res))
+            val registerRes = useVideoRepo ? RegisterUser(user)
+            onComplete(registerRes.mapTo[UserRecommendation]) {
+              case Success(ur) =>
+                complete((StatusCodes.OK, Register(ur.userId, ur.videoId)))
               case Failure(err) => complete((
                 StatusCodes.InternalServerError,
                 Errors(List(err.getMessage))
@@ -105,10 +107,12 @@ trait ApiRoutes extends JsonSupport {
                 StatusCodes.BadRequest,
                 Errors(List(s"userId $u not exist"))
               ))
-            case VideoNotCorrespond(_, _) =>
+            case VideoNotCorrespond(actualId, attemptedId) =>
               complete((
                 StatusCodes.BadRequest,
-                Errors(List(s"video does not correspond to last given"))
+                Errors(List(
+                  s"video $attemptedId does not correspond to last given $actualId"
+                ))
               ))
           }
        case Failure(err) => complete((

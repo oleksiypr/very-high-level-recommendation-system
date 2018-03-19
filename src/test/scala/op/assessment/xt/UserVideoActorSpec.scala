@@ -46,11 +46,11 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
       val probe = TestProbe()
       val userVideoRepo = system.actorOf(props(probe.ref))
 
-      userVideoRepo !  UserAction(userId = 1L, videoId = 2L, action = 3)
+      userVideoRepo !  UserAction(userId = 1L, videoId = 2L, actionId = 3)
       expectMsg(UserNotExist(1))
 
       userVideoRepo ! RegisterUser(User(
-        name = "David",
+        userName = "David",
         email = "david@gmail.com",
         age = 25,
         gender = 1
@@ -74,10 +74,10 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
         }
       )
 
-      userVideoRepo ! UserAction(userId, unexpectedVideo, action = 1)
+      userVideoRepo ! UserAction(userId, unexpectedVideo, actionId = 1)
       expectMsg(VideoNotCorrespond(unexpectedVideo, videoToExpect))
 
-      userVideoRepo ! UserAction(userId, videoToExpect, action = 1)
+      userVideoRepo ! UserAction(userId, videoToExpect, actionId = 1)
       expectMsgPF() {
         case UserRecommendation(u, v) => succeed
         case other => fail(s"Unexpected message: $other")
@@ -91,7 +91,7 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
       val userVideoRepo = system.actorOf(props(probe.ref))
 
       userVideoRepo ! RegisterUser(User(
-        name = "Joe",
+        userName = "Joe",
         email = "joe@gmail.com",
         age = 25,
         gender = 1
@@ -101,7 +101,7 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
       }
 
       userVideoRepo ! RegisterUser(User(
-        name = "Alice",
+        userName = "Alice",
         email = "joe@gmail.com",
         age = 25,
         gender = 2
@@ -125,20 +125,20 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
         }
       )
 
-      userVideoRepo ! UserAction(joeId, joeVideoId, action = 2)
+      userVideoRepo ! UserAction(joeId, joeVideoId, actionId = 2)
       expectMsgPF() {
         case UserRecommendation(u, v) => succeed
         case other => fail(s"Unexpected message: $other")
       }
 
-      userVideoRepo ! UserAction(aliceId, aliceVideoId, action = 3)
+      userVideoRepo ! UserAction(aliceId, aliceVideoId, actionId = 3)
       expectMsgPF() {
         case UserRecommendation(u, v) => succeed
         case other => fail(s"Unexpected message: $other")
       }
 
       val someUnknownUserId = 2 * (joeId + aliceId)
-      userVideoRepo ! UserAction(someUnknownUserId, aliceId, action = 3)
+      userVideoRepo ! UserAction(someUnknownUserId, aliceId, actionId = 3)
       expectMsg(UserNotExist(someUnknownUserId))
     }
   }
