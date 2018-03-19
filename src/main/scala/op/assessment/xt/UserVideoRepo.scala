@@ -29,23 +29,24 @@ trait UserVideoActor extends Actor {
   type UserId = Long
   type VideoId = Long
   type ActivityTracker = ActorRef
+  type Repo = Map[UserId, ActivityTracker]
 
-  val log = Logging(context.system, this)
-
-  private[this] var users: Map[UserId, ActivityTracker] = Map.empty
-  private[this] val videos: Array[VideoId] = Seq.fill(10)(Random.nextLong).toArray
+  private[this] var users: Repo = Map.empty
+  private[this] val videos = Array.fill(10)(Random.nextLong)
 
   private[this] var leastUserId: UserId = 0L
   private[this] var leastVideoIndex: Int = Random.nextInt(10)
 
+  def trackerProps(userId: Long, videoId: Long): Props
+
   implicit val timeout: Timeout = 5.seconds
   import context.dispatcher
 
-  def trackerProps(userId: Long, videoId: Long): Props
+  val log = Logging(context.system, this)
 
   val receive: Receive = {
     case RegisterUser(user) =>
-      log.info("New uesr: {}", user)
+      log.info("New user: {}", user)
       val userId = nextUserId()
       val videoId = leastVideo()
       val tracker = context.actorOf(trackerProps(userId, videoId))
