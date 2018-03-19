@@ -79,7 +79,7 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
 
       userVideoRepo ! UserAction(userId, videoToExpect, actionId = 1)
       expectMsgPF() {
-        case UserRecommendation(u, v) => succeed
+        case UserRecommendation(_, _) => succeed
         case other => fail(s"Unexpected message: $other")
       }
     }
@@ -127,13 +127,13 @@ class UserVideoActorSpec(_system: ActorSystem) extends TestKit(_system)
 
       userVideoRepo ! UserAction(joeId, joeVideoId, actionId = 2)
       expectMsgPF() {
-        case UserRecommendation(u, v) => succeed
+        case UserRecommendation(_, _) => succeed
         case other => fail(s"Unexpected message: $other")
       }
 
       userVideoRepo ! UserAction(aliceId, aliceVideoId, actionId = 3)
       expectMsgPF() {
-        case UserRecommendation(u, v) => succeed
+        case UserRecommendation(_, _) => succeed
         case other => fail(s"Unexpected message: $other")
       }
 

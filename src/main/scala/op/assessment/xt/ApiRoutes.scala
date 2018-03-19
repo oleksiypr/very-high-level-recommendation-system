@@ -43,7 +43,7 @@ object ApiRoutes {
     def validate(user: User): ValidationResult[User] = (
         validateName(user.userName),
         validateEmail(user.email),
-        valiadteAge(user.age),
+        validateAge(user.age),
         validateGender(user.gender)
       ).mapN(User)
 
@@ -57,7 +57,7 @@ object ApiRoutes {
       else EmailNotValid.invalidNel
     }
 
-    private def valiadteAge(age: Int): ValidationResult[Int] = {
+    private def validateAge(age: Int): ValidationResult[Int] = {
       if (age >= 5 && age <= 120) age.validNel
       else AgeNotValid.invalidNel
     }
