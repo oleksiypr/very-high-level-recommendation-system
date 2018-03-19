@@ -6,13 +6,13 @@ import akka.http.scaladsl.model.{MessageEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.{TestActor, TestProbe}
 import op.assessment.xt.UserVideoActor._
-import op.assessment.xt.UserVideoRoutes.{Errors, Register, User}
+import op.assessment.xt.ApiRoutes.{Errors, Register, User}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures
 
-class UserVideoRoutesSpec extends WordSpec
+class ApiRoutesSpec extends WordSpec
   with Matchers with ScalaFutures with ScalatestRouteTest
-  with UserVideoRoutes {
+  with ApiRoutes {
 
   val probe = TestProbe()
   val useVideoRepo: ActorRef = probe.ref

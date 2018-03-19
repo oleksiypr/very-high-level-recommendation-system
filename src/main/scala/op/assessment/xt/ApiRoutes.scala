@@ -10,14 +10,13 @@ import akka.util.Timeout
 import cats.data.Validated._
 import cats.data._
 import cats.implicits._
-import op.assessment.sn.JsonSupport
 import op.assessment.xt.UserVideoActor._
-import op.assessment.xt.UserVideoRoutes._
+import op.assessment.xt.ApiRoutes._
 import scala.concurrent.duration._
 import scala.util.matching.Regex
 import scala.util.{Failure, Success}
 
-object UserVideoRoutes {
+object ApiRoutes {
 
   final case class User(
       name: String,
@@ -70,7 +69,7 @@ object UserVideoRoutes {
   }
 }
 
-trait UserVideoRoutes extends JsonSupport {
+trait ApiRoutes extends JsonSupport {
 
   val useVideoRepo: ActorRef
 

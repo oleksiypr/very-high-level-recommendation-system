@@ -1,10 +1,10 @@
-package op.assessment.sn
+package op.assessment.xt
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import op.assessment.sn.BidRoutes.{Ammount, Bids, Fail}
 import op.assessment.sn.BidsRepository.Bid
+import op.assessment.xt.ApiRoutes.{Errors, Register, User}
 import op.assessment.xt.UserVideoActor.UserAction
-import op.assessment.xt.UserVideoRoutes.{Errors, Register, User}
 import spray.json.DefaultJsonProtocol
 
 trait JsonSupport extends SprayJsonSupport {

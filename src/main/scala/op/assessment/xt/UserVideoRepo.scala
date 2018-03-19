@@ -6,7 +6,7 @@ import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import op.assessment.xt.UserActivityTracker.{Track, TrackResult, Tracked, UnableToTrackVideo}
 import op.assessment.xt.UserVideoActor._
-import op.assessment.xt.UserVideoRoutes.User
+import op.assessment.xt.ApiRoutes.User
 import scala.concurrent.duration._
 import scala.util.Random
 

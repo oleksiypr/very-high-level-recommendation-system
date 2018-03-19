@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActor, TestKit, TestProbe}
 import op.assessment.xt.UserActivityTracker.{Track, Tracked, UnableToTrackVideo}
 import op.assessment.xt.UserVideoActor._
-import op.assessment.xt.UserVideoRoutes.User
+import op.assessment.xt.ApiRoutes.User
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 object UserVideoActorSpec {

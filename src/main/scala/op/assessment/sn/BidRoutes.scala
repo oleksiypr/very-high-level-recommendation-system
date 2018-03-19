@@ -9,6 +9,7 @@ import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import op.assessment.sn.BidRoutes.{Ammount, Bids, Fail}
 import op.assessment.sn.BidsRepository.{Bid, Item, Player}
+import op.assessment.xt.JsonSupport
 
 import scala.util.{Failure, Success}
 
